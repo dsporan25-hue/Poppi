@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Poppy</string>
+    <string name="developer_name">Md Saiful Islam Poran</string>
+    <string name="developer_studio">Poran Studio</string>
+    <string name="wake_phrase">Hello Poppy</string>
+    <string name="stop_phrase">Stop Poppy</string>
+    <string name="tagline">Personal AI Coding Assistant and GitHub Development Platform</string>
+</resources>
