@@ -25,18 +25,17 @@ interface HomeViewProps {
   onTriggerQuickBuild: () => void;
 }
 
-// Curated high-res cyberpunk anime girl avatar presets (static, no animation)
+// User-defined anime girl avatar (Official Poppy AI Character)
 const AVATAR_PRESETS = [
   {
-    id: 'cyber-valkyrie',
-    name: 'Valkyrie Red (Default)',
-    // Detailed cyberpunk illustration SVG with black and crimson armor
-    svgUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" width="100%" height="100%"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231a060a"/><stop offset="100%" stop-color="%2308080c"/></linearGradient><linearGradient id="armor" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231f1f28"/><stop offset="100%" stop-color="%230f0f14"/></linearGradient><linearGradient id="redNeon" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="%23ff2a4b"/><stop offset="100%" stop-color="%23e60026"/></linearGradient></defs><rect width="400" height="700" fill="url(%23bg)"/><circle cx="200" cy="180" r="140" fill="none" stroke="%23ff2a4b" stroke-width="1.5" stroke-dasharray="6,6" opacity="0.3"/><ellipse cx="200" cy="620" rx="120" ry="25" fill="%23000" opacity="0.8"/><path d="M170 330 Q200 370 230 330 L250 560 L150 560 Z" fill="url(%23armor)" stroke="%23ff2a4b" stroke-width="1.5"/><path d="M150 560 L135 680 L185 680 L195 560 Z" fill="%23121217" stroke="%23ff2a4b" stroke-width="1"/><path d="M250 560 L265 680 L215 680 L205 560 Z" fill="%23121217" stroke="%23ff2a4b" stroke-width="1"/><path d="M130 260 Q100 360 120 480 L150 470 L145 280 Z" fill="url(%23armor)" stroke="%23ff2a4b" stroke-width="1"/><path d="M270 260 Q300 360 280 480 L250 470 L255 280 Z" fill="url(%23armor)" stroke="%23ff2a4b" stroke-width="1"/><path d="M150 250 Q200 280 250 250 L240 370 Q200 390 160 370 Z" fill="url(%23armor)" stroke="%23ff2a4b" stroke-width="2"/><line x1="200" y1="260" x2="200" y2="360" stroke="%23ff2a4b" stroke-width="2"/><circle cx="200" cy="300" r="8" fill="%23ff2a4b"/><path d="M185 200 L185 250 L215 250 L215 200 Z" fill="%23fce8e6"/><path d="M160 160 Q200 230 240 160 Q240 120 200 110 Q160 120 160 160 Z" fill="%23fff0eb"/><path d="M140 130 Q200 40 260 130 Q290 270 270 350 Q250 220 250 170 Q200 130 150 170 Q150 220 130 350 Q110 270 140 130 Z" fill="%23181822"/><path d="M140 130 Q170 170 200 160 Q230 170 260 130 Q220 80 180 85 Z" fill="%2322222e"/><polygon points="160,145 240,145 230,162 170,162" fill="%23ff2a4b" opacity="0.85"/><circle cx="178" cy="154" r="3" fill="%23ffffff"/><circle cx="222" cy="154" r="3" fill="%23ffffff"/><line x1="165" y1="380" x2="235" y2="380" stroke="%23ff2a4b" stroke-width="3"/><text x="200" y="650" font-family="monospace" font-size="12" fill="%23ff2a4b" text-anchor="middle" letter-spacing="4">POPPY // CORE</text></svg>',
+    id: 'poppy-official',
+    name: 'Poppy Anime Character (Official)',
+    svgUrl: '/poppy-avatar.png',
   },
   {
-    id: 'neon-android',
-    name: 'Neon Android Agent',
-    svgUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" width="100%" height="100%"><defs><linearGradient id="bg2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%230f0f15"/><stop offset="100%" stop-color="%23050508"/></linearGradient></defs><rect width="400" height="700" fill="url(%23bg2)"/><circle cx="200" cy="220" r="160" fill="none" stroke="%23ff0033" stroke-width="1" opacity="0.2"/><path d="M150 280 L250 280 L260 550 L140 550 Z" fill="%23121118" stroke="%23ff0033" stroke-width="1.5"/><path d="M140 550 L130 670 L180 670 L190 550 Z" fill="%230d0d12" stroke="%23ff0033" stroke-width="1"/><path d="M260 550 L270 670 L220 670 L210 550 Z" fill="%230d0d12" stroke="%23ff0033" stroke-width="1"/><path d="M160 170 Q200 230 240 170 Q230 120 200 115 Q170 120 160 170 Z" fill="%23f7e3df"/><path d="M130 110 Q200 50 270 110 Q285 240 270 320 Q240 180 240 150 Q200 120 160 150 Q160 180 130 320 Z" fill="%23e60026"/><rect x="165" y="152" width="70" height="12" rx="3" fill="%23ff2a4b"/><text x="200" y="640" font-family="monospace" font-size="11" fill="%23e60026" text-anchor="middle" letter-spacing="3">PORAN STUDIO // PROTOCOL</text></svg>',
+    id: 'cyber-valkyrie',
+    name: 'Valkyrie Red (Alternative)',
+    svgUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700" width="100%" height="100%"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231a060a"/><stop offset="100%" stop-color="%2308080c"/></linearGradient><linearGradient id="armor" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%231f1f28"/><stop offset="100%" stop-color="%230f0f14"/></linearGradient><linearGradient id="redNeon" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="%23ff2a4b"/><stop offset="100%" stop-color="%23e60026"/></linearGradient></defs><rect width="400" height="700" fill="url(%23bg)"/><circle cx="200" cy="180" r="140" fill="none" stroke="%23ff2a4b" stroke-width="1.5" stroke-dasharray="6,6" opacity="0.3"/><path d="M170 330 Q200 370 230 330 L250 560 L150 560 Z" fill="url(%23armor)" stroke="%23ff2a4b" stroke-width="1.5"/><circle cx="200" cy="300" r="8" fill="%23ff2a4b"/><polygon points="160,145 240,145 230,162 170,162" fill="%23ff2a4b" opacity="0.85"/><text x="200" y="650" font-family="monospace" font-size="12" fill="%23ff2a4b" text-anchor="middle" letter-spacing="4">POPPY // CORE</text></svg>',
   },
 ];
 
@@ -48,7 +47,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onTriggerVoiceTest,
   onTriggerQuickBuild,
 }) => {
-  const [selectedAvatar, setSelectedAvatar] = useState<string>(AVATAR_PRESETS[0].svgUrl);
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('/poppy-avatar.png');
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [customImageUrl, setCustomImageUrl] = useState<string>('');
 

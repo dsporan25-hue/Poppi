@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 
@@ -211,12 +212,14 @@ app.get('/api/apk/status', (req, res) => {
   const apkPath = path.join(__dirname, 'public', 'downloads', 'app-debug.apk');
   if (fs.existsSync(apkPath)) {
     const stats = fs.statSync(apkPath);
+    const apkBuf = fs.readFileSync(apkPath);
+    const sha256Hash = crypto.createHash('sha256').update(apkBuf).digest('hex');
     return res.json({
       status: 'ready',
       fileName: 'POPPY-1.0.0-NEON-debug.apk',
       fileSize: (stats.size / 1024).toFixed(1) + ' KB',
       bytes: stats.size,
-      sha256: '75c21fa4afdd95054057effb39e0d5d82adcee873e21e8a8e7d0bb6e3f66d172',
+      sha256: sha256Hash,
       downloadUrl: '/downloads/app-debug.apk',
       verified: true,
       signatures: ['v1 (JAR)', 'v2 (APK Scheme v2)', 'v3 (APK Scheme v3)'],

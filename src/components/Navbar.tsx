@@ -26,9 +26,13 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-40 bg-[#07070b]/95 backdrop-blur-md border-b border-red-950/80 px-4 py-2.5 flex items-center justify-between">
       {/* Brand & Developer Info */}
       <div className="flex items-center space-x-3">
-        <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-red-600 to-red-950 border border-red-500 shadow-md glow-red-sm">
-          <span className="font-extrabold text-sm text-white tracking-widest font-mono">P</span>
-          <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />
+        <div className="relative flex items-center justify-center w-10 h-10 rounded-xl overflow-hidden border border-red-500 shadow-md glow-red-sm bg-black">
+          <img
+            src="/poppy-avatar.png"
+            alt="Poppy AI Logo"
+            className="w-full h-full object-cover object-top"
+          />
+          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />
         </div>
 
         <div>
