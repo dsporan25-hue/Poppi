@@ -34,29 +34,8 @@ export const GitHubView: React.FC<GitHubViewProps> = ({
     const saved = localStorage.getItem('poppy_github_user');
     return saved ? JSON.parse(saved) : null;
   });
-  const [repos, setRepos] = useState<GitHubRepo[]>([
-    {
-      id: 101,
-      name: 'POPPY',
-      full_name: 'poranstudio/POPPY',
-      description: 'Personal AI Coding Assistant & GitHub Development Platform for Android',
-      default_branch: 'main',
-      private: false,
-      html_url: 'https://github.com/poranstudio/POPPY',
-      updated_at: '2026-11-03',
-    },
-    {
-      id: 102,
-      name: 'Android-Jetpack-Templates',
-      full_name: 'poranstudio/Android-Jetpack-Templates',
-      description: 'Modern Android Kotlin Compose architecture blueprints',
-      default_branch: 'main',
-      private: true,
-      html_url: 'https://github.com/poranstudio/Android-Jetpack-Templates',
-      updated_at: '2026-10-28',
-    },
-  ]);
-  const [selectedRepo, setSelectedRepo] = useState<string>('POPPY');
+  const [repos, setRepos] = useState<GitHubRepo[]>([]);
+  const [selectedRepo, setSelectedRepo] = useState<string>('');
   const [selectedBranch, setSelectedBranch] = useState<string>('main');
   const [commitMessage, setCommitMessage] = useState<string>('feat(android): initialize POPPY AI architecture and build pipeline');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -114,19 +93,10 @@ export const GitHubView: React.FC<GitHubViewProps> = ({
         throw new Error(`GitHub rejected token with status ${res.status}.`);
       }
     } catch (err: any) {
-      console.warn('Real token validation failed, falling back to secure workspace session:', err);
-      // Create local session for Poran Studio
-      const fallbackUser: GitHubUser = {
-        login: 'poranstudio',
-        name: 'Md Saiful Islam Poran',
-        avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80',
-        public_repos: 14,
-        html_url: 'https://github.com/poranstudio',
-      };
-      setUser(fallbackUser);
-      setIsConnected(true);
-      setStatusMessage('Connected to GitHub (Offline / Poran Studio Authorized Session)');
-      soundEngine.playSuccess();
+      soundEngine.playAlert();
+      setIsConnected(false);
+      setUser(null);
+      setStatusMessage(`GitHub Authentication Failed: ${err.message || 'Invalid Personal Access Token'}. Please ensure your token has 'repo' & 'workflow' scopes.`);
     } finally {
       setIsLoading(false);
     }
