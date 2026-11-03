@@ -1,0 +1,10 @@
+{
+  "name": "POPPY AI - Android AI Coding Assistant & GitHub Platform",
+  "description": "Personal AI Coding Assistant and GitHub Development Platform for Android with JARVIS-style voice, build pipelines, and project management.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
