@@ -216,106 +216,209 @@ dependencies {
     language: "kotlin",
     content: `package com.poran.poppy
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.poran.poppy.ui.theme.NeonRed
-import com.poran.poppy.ui.theme.PoppyTheme
-import com.poran.poppy.ui.theme.DeepBlack
+import androidx.core.content.ContextCompat
+import com.poran.poppy.audio.PoppyVoiceManager
+import com.poran.poppy.data.SecurityPreferences
+import com.poran.poppy.network.GeminiApiClient
+import com.poran.poppy.ui.BgBlack
+import com.poran.poppy.ui.CrimsonDark
+import com.poran.poppy.ui.NeonRed
+import com.poran.poppy.ui.PoppyChatScreen
+import com.poran.poppy.ui.SurfaceCard
 
 /**
- * MainActivity - Primary entry point for POPPY AI Android client.
- * Engineered by Md Saiful Islam Poran (Poran Studio).
+ * MainActivity - Primary Gateway for POPPY AI (Phase 1: Brain)
+ * Engineered by Md Saiful Islam Poran (Poran Studio)
+ * Features: Jetpack Compose, Gemini API Dynamic Synthesis,
+ * EncryptedSharedPreferences (AES-256), Audio Synthesis, Wake-word recognition.
  */
 class MainActivity : ComponentActivity() {
+
+    private lateinit var securityPreferences: SecurityPreferences
+    private lateinit var geminiApiClient: GeminiApiClient
+    private var voiceManager: PoppyVoiceManager? = null
+    private var isListeningState by mutableStateOf(false)
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val recordAudioGranted = permissions[Manifest.permission.RECORD_AUDIO] ?: false
+        if (recordAudioGranted) {
+            Toast.makeText(this, "মাইক্রোফোন পারমিশন সক্রিয়।", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            PoppyTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = DeepBlack
-                ) {
-                    PoppyDashboardScreen()
+        securityPreferences = SecurityPreferences(this)
+        geminiApiClient = GeminiApiClient(securityPreferences)
+
+        voiceManager = PoppyVoiceManager(
+            context = this,
+            onWakeWordDetected = {
+                runOnUiThread {
+                    Toast.makeText(this, "⚡ 'Hello Poppy' ওয়েক-ওয়ার্ড সনাক্ত!", Toast.LENGTH_SHORT).show()
+                    voiceManager?.speak("হ্যাঁ, আমি শুনছি। আপনার নির্দেশ বলুন।")
+                    voiceManager?.startListening()
                 }
+            },
+            onStopWordDetected = {
+                runOnUiThread {
+                    voiceManager?.stopSpeaking()
+                    voiceManager?.stopListening()
+                }
+            },
+            onSpeechRecognized = {},
+            onListeningStatusChanged = { listening ->
+                runOnUiThread { isListeningState = listening }
+            },
+            onErrorOccurred = { error ->
+                runOnUiThread { Toast.makeText(this, error, Toast.LENGTH_SHORT).show() }
+            }
+        )
+
+        setContent {
+            val customColorScheme = darkColorScheme(
+                primary = NeonRed,
+                background = BgBlack,
+                surface = SurfaceCard,
+                secondary = CrimsonDark
+            )
+            MaterialTheme(colorScheme = customColorScheme) {
+                PoppyChatScreen(
+                    securityPreferences = securityPreferences,
+                    geminiApiClient = geminiApiClient,
+                    voiceManager = voiceManager,
+                    isListening = isListeningState,
+                    onToggleMic = {
+                        if (isListeningState) voiceManager?.stopListening()
+                        else voiceManager?.startListening()
+                    },
+                    onRequestPermissions = {}
+                )
             }
         }
     }
+
+    override fun onDestroy() {
+        voiceManager?.destroy()
+        voiceManager = null
+        super.onDestroy()
+    }
 }
+`
+  },
+  {
+    path: "app/src/main/java/com/poran/poppy/data/SecurityPreferences.kt",
+    name: "SecurityPreferences.kt",
+    language: "kotlin",
+    content: `package com.poran.poppy.data
 
-@Composable
-fun PoppyDashboardScreen() {
-    var statusText by remember { mutableStateOf("JARVIS Neural Core: ONLINE") }
-    var wakePhraseActive by remember { mutableStateOf(true) }
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "POPPY AI",
-                color = NeonRed,
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Poran Studio • Md Saiful Islam Poran",
-                color = Color.LightGray,
-                fontSize = 13.sp
-            )
+/**
+ * SecurityPreferences - EncryptedSharedPreferences (AES-256)
+ * Stores Gemini API Key and Model choice securely.
+ */
+class SecurityPreferences(context: Context) {
+    private val prefs: SharedPreferences = try {
+        val masterKey = MasterKey.Builder(context)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        EncryptedSharedPreferences.create(
+            context,
+            "poppy_secure_prefs",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    } catch (e: Exception) {
+        context.getSharedPreferences("poppy_secure_prefs_fallback", Context.MODE_PRIVATE)
+    }
+
+    fun saveApiKey(apiKey: String) = prefs.edit().putString("gemini_api_key", apiKey.trim()).apply()
+    fun getApiKey(): String = prefs.getString("gemini_api_key", "") ?: ""
+    fun hasApiKey(): Boolean = getApiKey().isNotBlank()
+    fun saveModel(model: String) = prefs.edit().putString("gemini_model", model.trim()).apply()
+    fun getModel(): String = prefs.getString("gemini_model", "gemini-2.5-flash") ?: "gemini-2.5-flash"
+}
+`
+  },
+  {
+    path: "app/src/main/java/com/poran/poppy/network/GeminiApiClient.kt",
+    name: "GeminiApiClient.kt",
+    language: "kotlin",
+    content: `package com.poran.poppy.network
+
+import com.poran.poppy.data.SecurityPreferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+
+class GeminiApiClient(private val securityPreferences: SecurityPreferences) {
+    private val client = OkHttpClient()
+    private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
+
+    suspend fun generateContent(prompt: String, history: List<Pair<String, String>> = emptyList()): Result<String> = withContext(Dispatchers.IO) {
+        val apiKey = securityPreferences.getApiKey()
+        if (apiKey.isBlank()) {
+            return@withContext Result.failure(Exception("দয়া করে Settings-এ গিয়ে আপনার Gemini API Key সেট করুন।"))
         }
+        val model = securityPreferences.getModel()
+        val url = "https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey"
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .background(Color(0xFF140D0F), RoundedCornerShape(16.dp))
-                .border(1.dp, NeonRed.copy(alpha = 0.6f), RoundedCornerShape(16.dp))
-                .padding(24.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = statusText,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Listening for: 'Hello Poppy'",
-                    color = NeonRed,
-                    fontSize = 12.sp
-                )
+        try {
+            val rootJson = JSONObject().apply {
+                put("contents", JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("role", "user")
+                        put("parts", JSONArray().apply { put(JSONObject().apply { put("text", prompt) }) })
+                    })
+                })
             }
-        }
-
-        Button(
-            onClick = {
-                statusText = "Build Pipeline Synced • APK Ready"
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = NeonRed),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth().height(52.dp)
-        ) {
-            Text(text = "Trigger System Diagnostics", color = Color.White)
+            val request = Request.Builder().url(url).post(rootJson.toString().toRequestBody(jsonMediaType)).build()
+            client.newCall(request).execute().use { response ->
+                if (response.isSuccessful) {
+                    val body = response.body?.string().orEmpty()
+                    val candidateText = JSONObject(body).getJSONArray("candidates").getJSONObject(0).getJSONObject("content").getJSONArray("parts").getJSONObject(0).getString("text")
+                    Result.success(candidateText)
+                } else {
+                    val code = response.code
+                    val errorMsg = when (code) {
+                        400, 401, 403 -> "ভুল API Key! অনুগ্রহ করে আপনার Gemini API Key যাচাই করুন।"
+                        429 -> "API কোটা শেষ হয়ে গেছে! অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।"
+                        in 500..599 -> "Gemini সার্ভার সমস্যা (HTTP $code)!"
+                        else -> "অনুরোধ ব্যর্থ হয়েছে (HTTP $code)"
+                    }
+                    Result.failure(Exception(errorMsg))
+                }
+            }
+        } catch (e: SocketTimeoutException) {
+            Result.failure(Exception("অনুরোধ টাইমআউট হয়েছে! সার্ভারের সাথে সংযোগ স্থাপন করা যায়নি।"))
+        } catch (e: UnknownHostException) {
+            Result.failure(Exception("ইন্টারনেট সংযোগ নেই! আপনার মোবাইল ডেটা বা ওয়াইফাই চেক করুন।"))
+        } catch (e: Exception) {
+            Result.failure(Exception("ত্রুটি: \${e.message}"))
         }
     }
 }

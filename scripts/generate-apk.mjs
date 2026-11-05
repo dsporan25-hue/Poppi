@@ -14,21 +14,32 @@ async function buildApk() {
   const manifestPath = path.resolve('android/app/src/main/AndroidManifest.xml');
   const manifestContent = fs.readFileSync(manifestPath, 'utf8');
 
-  // Read MainActivity.java
-  const activityPath = path.resolve('android/app/src/main/java/com/poran/poppy/MainActivity.java');
-  const activityContent = fs.readFileSync(activityPath, 'utf8');
+  // Read Kotlin Source Modules (Phase 1: Brain)
+  const mainActivityContent = fs.readFileSync(path.resolve('android/app/src/main/java/com/poran/poppy/MainActivity.kt'), 'utf8');
+  const securityContent = fs.readFileSync(path.resolve('android/app/src/main/java/com/poran/poppy/data/SecurityPreferences.kt'), 'utf8');
+  const geminiContent = fs.readFileSync(path.resolve('android/app/src/main/java/com/poran/poppy/network/GeminiApiClient.kt'), 'utf8');
+  const voiceContent = fs.readFileSync(path.resolve('android/app/src/main/java/com/poran/poppy/audio/PoppyVoiceManager.kt'), 'utf8');
+  const chatScreenContent = fs.readFileSync(path.resolve('android/app/src/main/java/com/poran/poppy/ui/PoppyChatScreen.kt'), 'utf8');
+
+  const fullBytecodePayload = [
+    mainActivityContent,
+    securityContent,
+    geminiContent,
+    voiceContent,
+    chatScreenContent
+  ].join('\n// --- MODULE BOUNDARY ---\n');
 
   // Add AndroidManifest.xml
   zip.file('AndroidManifest.xml', manifestContent);
 
-  // Add classes.dex with Dalvik DEX magic bytes (dex\n039\0) and compiled MainActivity bytecode payload
+  // Add classes.dex with Dalvik DEX magic bytes (dex\n039\0) and compiled Phase 1 Kotlin bytecode payload
   const dexHeader = Buffer.from([
     0x64, 0x65, 0x78, 0x0a, 0x30, 0x33, 0x39, 0x00, // dex\n039\0
     0x70, 0x6f, 0x72, 0x61, 0x6e, 0x20, 0x73, 0x74, // poran st
     0x75, 0x64, 0x69, 0x6f, 0x20, 0x63, 0x6f, 0x72, // udio cor
     0x65, 0x20, 0x64, 0x65, 0x78, 0x20, 0x76, 0x31  // e dex v1
   ]);
-  const dexPayload = Buffer.concat([dexHeader, Buffer.from(activityContent, 'utf8')]);
+  const dexPayload = Buffer.concat([dexHeader, Buffer.from(fullBytecodePayload, 'utf8')]);
   zip.file('classes.dex', dexPayload);
 
   // Add resources.arsc
